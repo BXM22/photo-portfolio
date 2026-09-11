@@ -1,0 +1,35 @@
+# ==============================================================================
+# LOCAL DEVELOPMENT DATABASE
+# ==============================================================================
+# Spins up a throwaway PostgreSQL instance for local development so you
+# don't need Postgres installed on your machine directly. Run `docker
+# compose up -d` once, then leave it running in the background.
+#
+# LEARNING NOTE: this is NOT how you'd run Postgres in production — for
+# production you'd use a managed database (Neon, Supabase, RDS, etc.) that
+# handles backups, replication, and scaling for you. This compose file is
+# purely a local-dev convenience.
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: photo_portfolio
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume so your data survives `docker compose down` (but not
+      # `docker compose down -v`, which explicitly wipes volumes too).
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
