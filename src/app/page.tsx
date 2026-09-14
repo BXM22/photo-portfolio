@@ -1,6 +1,8 @@
 import Image from "next/image";
 import hero from "@/assets/hero.jpg";
 import Navbar from "@/components/Navbar";
+import Work from "./Work";
+import Contact from "./Contact";
 import styles from "@/styles/page.module.css";
 
 const INSTAGRAM_URL = "https://www.instagram.com/bxtxm_photos/";
@@ -66,29 +68,24 @@ export default function Home() {
           <div className={styles.aboutHeading}>
             <p className={styles.aboutLabel}>About</p>
             <h2 className={styles.aboutTitle}>
-              Photography that sits still
+              I TAKE A
               <br />
-              until you look closer.
+              LOT OF PHOTOS
             </h2>
           </div>
           <div className={styles.aboutCopy}>
             <p className={styles.aboutBody}>
-              BXTXM is a photography practice focused on landscape and travel —
-              long horizons, low light, and the kind of stillness that&apos;s
-              easy to walk past. Every frame is shot on location, unstaged.
+            I'm a photographer with a real love for nature, street scenes, and the candid, 
+            unscripted moments in between, plus the occasional portraits. 
+            This is where I share the world as I see it through my lens: 
+            wild landscapes, city life caught off guard, and the small moments 
+            that usually go unnoticed.
             </p>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.instagramLink}
-            >
-              See the work on Instagram
-              <span aria-hidden="true">↗</span>
-            </a>
           </div>
         </div>
       </section>
+      <Work />
+      <Contact />
     </main>
   );
 }

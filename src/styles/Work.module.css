@@ -1,0 +1,177 @@
+.section {
+  box-sizing: border-box;
+  padding: 120px 0 140px;
+}
+
+.label {
+  margin: 0 0 28px;
+  padding-inline: 5vw;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--foreground-subtle);
+  text-transform: uppercase;
+}
+
+.scroller {
+  display: flex;
+  overflow-x: auto;
+  overflow-anchor: none;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--foreground-subtle) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroller:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
+}
+
+.slide {
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  min-width: 100%;
+  padding: 2.5rem 8vw;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  justify-content: center;
+}
+
+.stage {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.frame {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: var(--background);
+  transition:
+    transform 220ms var(--ease-out),
+    opacity 220ms var(--ease-out),
+    aspect-ratio 220ms var(--ease-out);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.center {
+  width: min(38vw, 360px);
+  min-width: 7.5rem;
+  z-index: 2;
+}
+
+.side {
+  width: min(24vw, 230px);
+  min-width: 5rem;
+  z-index: 1;
+  opacity: 0.45;
+}
+
+.left {
+  margin-right: -14%;
+  transform-origin: 100% 60%;
+}
+
+.right {
+  margin-left: -14%;
+  transform-origin: 0% 60%;
+}
+
+.title,
+.year {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  font-family: var(--font-archivo-black), sans-serif;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease-out);
+}
+
+.title {
+  top: 7%;
+  left: 5%;
+  font-size: clamp(22px, 4.2vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--foreground);
+}
+
+.year {
+  right: 8%;
+  bottom: 6%;
+  font-size: clamp(22px, 4.2vw, 44px);
+  letter-spacing: 0.02em;
+  color: var(--foreground);
+  text-shadow: 0 1px 18px rgba(12, 16, 20, 0.55);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cluster:hover .side {
+    opacity: 0.88;
+  }
+
+  .cluster:hover .left {
+    transform: rotate(-9deg) translateX(-10%);
+  }
+
+  .cluster:hover .right {
+    transform: rotate(9deg) translateX(10%);
+  }
+
+  .cluster:hover .frame:hover {
+    z-index: 4;
+    opacity: 1;
+  }
+
+  .cluster:hover .left:hover {
+    transform: rotate(-5deg) translateX(-16%);
+  }
+
+  .cluster:hover .right:hover {
+    transform: rotate(5deg) translateX(16%);
+  }
+
+  .frame:hover {
+    aspect-ratio: var(--shot-ratio);
+  }
+
+  .slide:has(.frame:hover) .title,
+  .slide:has(.frame:hover) .year {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroller {
+    scroll-behavior: auto;
+  }
+
+  .frame,
+  .title,
+  .year {
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  .cluster:hover .left,
+  .cluster:hover .right,
+  .cluster:hover .left:hover,
+  .cluster:hover .right:hover {
+    transform: none;
+  }
+}

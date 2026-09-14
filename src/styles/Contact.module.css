@@ -1,0 +1,166 @@
+.section {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  padding: 120px 5vw 140px;
+  background: radial-gradient(
+    circle at 50% 42%,
+    color-mix(in srgb, var(--foreground) 5.5%, var(--background)),
+    var(--background) 64%
+  );
+}
+
+.label {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--foreground-subtle);
+  text-transform: uppercase;
+}
+
+.inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+.stage {
+  --count: 5;
+  container-type: inline-size;
+  position: relative;
+  display: flex;
+  width: min(28.75rem, 100%);
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  animation: orbit-spin 48s linear infinite;
+}
+
+.satWrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: rotate(calc(var(--i) * 360deg / var(--count)))
+    translate(45.65cqi)
+    rotate(calc(var(--i) * -360deg / var(--count)));
+}
+
+.sat {
+  position: absolute;
+  width: min(4.625rem, 16cqi);
+  height: min(4.625rem, 16cqi);
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: orbit-unspin 48s linear infinite;
+}
+
+.image,
+.avatarImage {
+  object-fit: cover;
+}
+
+.avatarImage {
+  object-position: 58% 42%;
+}
+
+.avatar {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(13.75rem, 48cqi);
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 2px solid color-mix(in srgb, var(--foreground) 25%, transparent);
+  border-radius: 50%;
+  text-decoration: none;
+  transition: transform 160ms var(--ease-out);
+}
+
+.avatar:active {
+  transform: scale(0.97);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(10, 14, 18, 0.72);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease-out);
+}
+
+.avatar:focus-visible .overlay {
+  opacity: 1;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.84375rem;
+  letter-spacing: 0.02em;
+  color: var(--foreground-muted);
+  text-align: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .avatar:hover .overlay {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring,
+  .sat {
+    animation: none;
+  }
+
+  .overlay {
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  .avatar:active {
+    transform: none;
+  }
+}
+
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-unspin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
