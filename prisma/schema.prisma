@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Slot {
+  left
+  center
+  right
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Album {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  year      String
+  sortOrder Int      @default(0)
+  photos    Photo[]
+  createdAt DateTime @default(now())
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  storageKey  String   @unique
+  alt         String
+  width       Int
+  height      Int
+  blurDataUrl String?  @db.Text
+  slot        Slot?
+  albumId     String?
+  album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  tags        PhotoTag[]
+  createdAt   DateTime @default(now())
+
+  @@unique([albumId, slot])
+  @@index([albumId])
+  @@index([createdAt])
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  photos PhotoTag[]
+}
+
+model PhotoTag {
+  photoId String
+  tagId   String
+  photo   Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  tag     Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, tagId])
+}

@@ -2,9 +2,11 @@
 
 Photography portfolio CMS for BXTXM: Postgres, admin auth, direct-to-object-storage uploads, and Work location sets (title, year, three slotted photos) that render in the existing `#work` template. Built so a backend resume bullet is defensible in an interview.
 
+**Frontend v1 is shipped.** Hero, About, Work (horizontal location scroller + `PhotoDialog`), and Instagram (`#contact`) are the public template. Do not restyle them. The CMS replaces the hardcoded `locations` array in `src/app/Work.tsx` with Prisma data of the same shape.
+
 Recruiters care about data modeling, locking down mutations, storing files correctly, and tradeoffs — not extra frameworks. Microservices, GraphQL, and Kafka are out of scope.
 
-Init commit `dd3c7f7` is a pattern for Prisma, Auth.js, presigned S3, Zod, and `src/proxy.ts`. Copy the architecture, not the tutorial comments. Keep the current BXTXM hero and About. CSS stays in `src/styles/`.
+Init commit `dd3c7f7` is a pattern for Prisma, Auth.js, presigned S3, Zod, and `src/proxy.ts`. Copy the architecture, not the tutorial comments. CSS stays in `src/styles/`. Start at step 1.
 
 ---
 
@@ -32,7 +34,7 @@ flowchart LR
   API -->|"presign URL"| S3
 ```
 
-- **Public pages:** Server Components query Prisma in `src/lib/queries.ts` — no HTTP hop for first paint.
+- **Public pages:** `src/app/page.tsx` (RSC) queries Prisma via `src/lib/queries.ts` and passes `Location[]` into `Work`. `Work.tsx` is a client component (scroller + dialog) — do not import Prisma there, and do not fetch `/api/photos` for first paint.
 - **Mutations:** Route Handlers, each gated by `requireAdmin()`.
 - **Uploads:** the browser `PUT`s to a 60s presigned URL; then `POST /api/photos` stores metadata.
 - **Defense in depth:** `src/proxy.ts` guards `/admin` and `/api/upload`; write handlers still check the session. Do not put `GET /api/photos` in the matcher (public reads).
@@ -56,19 +58,22 @@ Public image URL is derived: `` `${CDN_BASE}/${storageKey}` ``.
 
 Each album is one location:
 
+- `id` — stable key for slides, clones, and dots (`tetons`, `japan`, then slugs)
 - `title` — outline overlay
 - `year` — on the center frame
 - exactly three photos: **left**, **center**, **right**
 
-That matches the existing `Location` type (`title`, `year`, `left`, `center`, `right`). Hover, aspect-ratio, and the horizontal scroller stay in `src/styles/Work.module.css`. Store `width` / `height` on each photo so `--shot-ratio` still works after images move off static imports.
+That matches the existing `Location` type. Hover, aspect-ratio, dots, and the looping horizontal scroller stay in `src/styles/Work.module.css`. Clicking a shot opens `src/components/PhotoDialog.tsx` (same `Photo` type).
+
+Today `Photo.src` is `StaticImageData`, and `--shot-ratio` reads `shot.src.width / shot.src.height`. After the CMS lands, each shot is `{ src: string; alt: string; width: number; height: number }` — `src` is `publicUrlForKey(storageKey)`. Widen `Photo` in `PhotoDialog.tsx` so both the scroller and the dialog accept a remote URL. Add the CDN host to `images.remotePatterns` in `next.config.ts`.
 
 Admin flow:
 
 1. Log in at `/admin/login`.
 2. New set: title, year, three uploads labeled Left / Center / Right, alt text per photo.
-3. Save. `#work` queries Prisma and renders another `LocationSlide`.
+3. Save. `page.tsx` queries Prisma, passes the new set into `Work`, and another `LocationSlide` appears.
 
-Reject saves that are missing a slot, have two photos in the same slot, or omit title/year. Seed Grand Tetons and Japan as the first two albums so the page looks the same after the CMS lands.
+Reject saves that are missing a slot, have two photos in the same slot, or omit title/year. Seed **Grand Tetons** and **Japan** as the first two albums (same titles, years, alts, and slot order as the hardcoded array) so the page looks the same after the CMS lands.
 
 ### Target layout
 
@@ -98,12 +103,14 @@ src/
     admin/(dashboard)/...
     albums/page.tsx
     albums/[slug]/page.tsx
-    page.tsx          # existing hero + about; add #work
+    page.tsx          # hero + about + <Work locations={...} /> + Contact
+    Work.tsx          # client; receives locations as props
+    Contact.tsx       # Instagram orbit — leave static
 ```
 
 ### Out of scope
 
-JSON-as-a-database, files in `/public`, GraphQL, a separate Express service, a contact form, restoring the old Tailwind homepage. The hero in `src/app/page.tsx` stays.
+JSON-as-a-database, files in `/public`, GraphQL, a separate Express service, a contact form, restoring the old Tailwind homepage. Hero, About, and the Instagram orbit in `src/app/Contact.tsx` stay static assets. Do not CMS-back `#contact`.
 
 ---
 
@@ -111,9 +118,13 @@ JSON-as-a-database, files in `/public`, GraphQL, a separate Express service, a c
 
 Follow in order.
 
-### 0. Keep the current site
+### 0. Keep the current site — done
 
-Do not replace the hero, About, Contact, or the Work slide layout. `src/app/Work.tsx` already renders location slides from a hardcoded `locations` array. The CMS replaces that array with Prisma data of the same shape. Navbar Work (`#work` in `src/components/Navbar.tsx`) already jumps there.
+Frontend v1 is the freeze. Do not replace the hero, About, Instagram orbit, or the Work slide layout.
+
+Frozen files: `src/app/page.tsx`, `src/app/Work.tsx`, `src/app/Contact.tsx`, `src/components/Navbar.tsx`, `src/components/PhotoDialog.tsx`, `src/styles/*`. Navbar: About / Work / Instagram (`#about`, `#work`, `#contact`). Skip link targets `#work`.
+
+The only public-site edits this plan allows: pass `locations` into `Work` from `page.tsx`, widen `Photo` for remote URLs, and add `images.remotePatterns` for the CDN.
 
 ### 1. Dependencies and scripts
 
@@ -147,7 +158,7 @@ Point Prisma seed at `prisma/seed.ts`.
 Add `.env.example`. Never commit `.env`.
 
 ```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/photo_portfolio"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/photo_portfolio"
 AUTH_SECRET=""
 ADMIN_EMAIL=""
 ADMIN_PASSWORD=""
@@ -166,7 +177,7 @@ Generate `AUTH_SECRET` with `openssl rand -base64 32`.
 
 `docker-compose.yml` with Postgres matching `.env.example`:
 
-`postgresql://postgres:postgres@localhost:5432/photo_portfolio`
+`postgresql://postgres:postgres@localhost:5433/photo_portfolio`
 
 Optional: MinIO in the same compose file so uploads work without an AWS account.
 
@@ -241,11 +252,14 @@ Shared reads live in `src/lib/queries.ts` so Server Components and GET handlers 
 
 ### 11. Public Work
 
-- Homepage `#work`: query albums that have all three slots, map each to the existing `Location` shape, keep `LocationSlide` and `src/styles/Work.module.css`.
+- In `page.tsx` (RSC): query albums that have all three slots (`src/lib/queries.ts`), map each to `Location`, pass them as props into `Work`.
+- Lift the hardcoded `locations` array out of `Work.tsx`. Keep `LocationSlide`, the looping scroller, dots, and `src/styles/Work.module.css`.
 - Do not swap the three-up cluster for a masonry grid or a generic photo list.
-- Remote `next/image` URLs from `publicUrlForKey`; pass stored width/height for `--shot-ratio`.
+- Widen `Photo` so `src` is a string URL (or `StaticImageData` during the cutover). `--shot-ratio` must use stored `width` / `height`, not `shot.src.width`.
+- `PhotoDialog` shares that type — a click still opens the dialog on remote images.
+- Allow the CDN in `next.config.ts` (`images.remotePatterns`). Without it, `next/image` will refuse the files.
 - `/albums` and `/albums/[slug]` are optional archive routes. The homepage scroller is the product.
-- Contact is already on the page; leave it.
+- Instagram (`src/app/Contact.tsx`) stays hardcoded.
 
 ### 12. Admin UI
 
@@ -289,7 +303,8 @@ npm run dev
 ## Done when
 
 - Unauthenticated writes return 401.
-- Authenticated save of title + year + three slotted photos: files in the bucket, album row in Postgres, a new slide on `#work` using the existing template.
+- Authenticated save of title + year + three slotted photos: files in the bucket, album row in Postgres, a new slide on `#work` using the existing template (scroller, dots, `PhotoDialog`).
 - Saving with fewer than three slots, or two photos in the same slot, returns 400.
 - Deleting an album does not delete its photos (`albumId` set to null).
+- Seeded Grand Tetons and Japan match the v1 hardcoded sets.
 - `npm run lint`, `typecheck`, `test`, and `build` pass.

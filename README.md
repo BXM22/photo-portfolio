@@ -23,6 +23,8 @@ Work and Contact sections are wired in the nav and will land as the archive grow
 
 ## Stack
 
+### Frontend
+
 | Layer | Choice |
 | --- | --- |
 | Framework | Next.js 16 (App Router) |
@@ -32,6 +34,18 @@ Work and Contact sections are wired in the nav and will land as the archive grow
 | Type | `next/font` (Archivo Black, Space Grotesk) |
 | Images | `next/image` |
 | CI | GitHub Actions |
+
+### Backend
+
+| Layer | Choice |
+| --- | --- |
+| Runtime | Next.js Route Handlers and Server Components |
+| Database | PostgreSQL 16 (Docker Compose locally) |
+| ORM | Prisma |
+| Auth | Auth.js (NextAuth v5), bcrypt |
+| Validation | Zod |
+| Storage | S3-compatible object storage (AWS S3 or R2) with presigned uploads |
+| Tests | Vitest |
 
 ## Getting started
 
