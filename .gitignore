@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# local agent telemetry and design references
+.claude-flow/
+inspo/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
