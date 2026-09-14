@@ -1,46 +1,94 @@
-// ============================================================================
-// HOME PAGE — the public gallery.
-// ============================================================================
-// This is an `async` Server Component: it runs on the server, awaits data
-// directly from the database (via src/lib/queries.ts — no HTTP round trip
-// to our own API needed), and streams the finished HTML to the browser.
-// Compare this to the old "fetch from your own API in useEffect" pattern —
-// there's no client-side loading spinner needed for the initial view at
-// all, because the data is already baked into the HTML by the time it
-// arrives.
-// ============================================================================
+import Image from "next/image";
+import hero from "@/assets/hero.jpg";
+import Navbar from "@/components/Navbar";
+import styles from "@/styles/page.module.css";
 
-import { getPhotos, getTags } from "@/lib/queries";
-import PhotoGrid from "@/components/PhotoGrid";
-import TagFilter from "@/components/TagFilter";
-import SearchBar from "@/components/SearchBar";
+const INSTAGRAM_URL = "https://www.instagram.com/bxtxm_photos/";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ tag?: string; q?: string }>;
-}) {
-  // `searchParams` is a Promise in the App Router (as of Next.js 15+) —
-  // this is what lets Next.js start rendering static parts of the page
-  // (like the layout) before the dynamic, request-specific parts (like
-  // "what did the user search for?") are even known.
-  const { tag, q } = await searchParams;
-
-  // Fetching in parallel with Promise.all instead of two sequential
-  // `await`s cuts the total wait time roughly in half — both queries hit
-  // the database at the same time instead of one after the other.
-  const [photos, tags] = await Promise.all([
-    getPhotos({ tag, query: q }),
-    getTags(),
-  ]);
-
+export default function Home() {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <TagFilter tags={tags} />
-        <SearchBar />
-      </div>
-      <PhotoGrid photos={photos} />
-    </div>
+    <main>
+      <a className={styles.skipLink} href="#about">
+        Skip to about
+      </a>
+
+      <section className={styles.hero}>
+        <div className={styles.heroImageWrap}>
+          <Image
+            src={hero}
+            alt="People standing on a still salt lake, with mountains reflected in the water"
+            fill
+            fetchPriority="high"
+            loading="eager"
+            placeholder="blur"
+            sizes="100vw"
+            className={styles.heroImage}
+          />
+        </div>
+        <div aria-hidden="true" className={styles.heroOverlay} />
+
+        <nav
+          aria-label="Primary"
+          className={`${styles.heroEnter} ${styles.nav}`}
+        >
+          <p className={styles.brand}>BXTXM</p>
+          <Navbar />
+        </nav>
+
+        <div className={styles.heroIntro}>
+          <h1
+            className={`${styles.heroEnter} ${styles.heroEnterDelay1} ${styles.heroTitle}`}
+          >
+            Still water
+            <br />
+            Still light
+          </h1>
+          <p
+            className={`${styles.heroEnter} ${styles.heroEnterDelay2} ${styles.heroLead}`}
+          >
+            A photography practice built around quiet landscapes and the moments
+            just before or after everything happens.
+          </p>
+        </div>
+
+        <div className={styles.heroWordmarkWrap}>
+          <p
+            aria-hidden="true"
+            className={`${styles.heroEnter} ${styles.heroEnterDelay3} ${styles.heroWordmark}`}
+          >
+            BXTXM
+          </p>
+        </div>
+      </section>
+
+      <section id="about" className={styles.about}>
+        <div className={styles.aboutInner}>
+          <div className={styles.aboutHeading}>
+            <p className={styles.aboutLabel}>About</p>
+            <h2 className={styles.aboutTitle}>
+              Photography that sits still
+              <br />
+              until you look closer.
+            </h2>
+          </div>
+          <div className={styles.aboutCopy}>
+            <p className={styles.aboutBody}>
+              BXTXM is a photography practice focused on landscape and travel —
+              long horizons, low light, and the kind of stillness that&apos;s
+              easy to walk past. Every frame is shot on location, unstaged.
+            </p>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagramLink}
+            >
+              See the work on Instagram
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

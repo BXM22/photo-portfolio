@@ -1,0 +1,237 @@
+.skipLink {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 50;
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--ink);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.skipLink:not(:focus-visible) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 2.25rem 5vw 0;
+}
+
+.heroImageWrap,
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.heroOverlay {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 14, 18, 0.35) 0%,
+    rgba(10, 14, 18, 0.15) 40%,
+    rgba(8, 11, 15, 0.75) 100%
+  );
+}
+
+.nav,
+.heroIntro,
+.heroWordmarkWrap {
+  position: relative;
+  z-index: 10;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.brand {
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--foreground);
+}
+
+.heroIntro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2.5rem;
+  margin-top: 1.75rem;
+}
+
+.heroTitle {
+  max-width: 320px;
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: var(--foreground);
+  text-transform: uppercase;
+}
+
+.heroLead {
+  margin: 0;
+  max-width: 300px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--foreground-soft);
+}
+
+@media (min-width: 640px) {
+  .heroLead {
+    text-align: right;
+  }
+}
+
+.heroWordmarkWrap {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  padding-bottom: 2.25rem;
+}
+
+.heroWordmark {
+  margin: 0;
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: clamp(72px, 17vw, 220px);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--foreground) 94%, transparent);
+  white-space: nowrap;
+  mix-blend-mode: overlay;
+  filter: brightness(1.4);
+}
+
+.heroEnter {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 400ms var(--ease-out),
+    transform 400ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .heroEnter {
+    @starting-style {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  .heroEnterDelay1 {
+    transition-delay: 50ms;
+  }
+
+  .heroEnterDelay2 {
+    transition-delay: 100ms;
+  }
+
+  .heroEnterDelay3 {
+    transition-delay: 150ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroEnter {
+    transform: none;
+    transition: opacity 200ms ease;
+  }
+}
+
+.about {
+  box-sizing: border-box;
+  padding: 120px 5vw 140px;
+}
+
+.aboutInner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4rem;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.aboutHeading {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.aboutLabel {
+  margin: 0 0 18px;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--foreground-subtle);
+  text-transform: uppercase;
+}
+
+.aboutTitle {
+  margin: 0;
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.aboutCopy {
+  min-width: 0;
+  max-width: 460px;
+  flex: 1 1 320px;
+}
+
+.aboutBody {
+  margin: 0 0 1.5rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--foreground-muted);
+}
+
+.instagramLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 40%, transparent);
+  padding-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.instagramLink:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .instagramLink:hover {
+    opacity: 0.75;
+  }
+}

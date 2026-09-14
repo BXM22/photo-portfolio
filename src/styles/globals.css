@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0c1014;
+  --foreground: #f4f3ef;
+  --foreground-muted: rgba(244, 243, 239, 0.75);
+  --foreground-soft: rgba(244, 243, 239, 0.82);
+  --foreground-subtle: rgba(244, 243, 239, 0.5);
+  --cream: rgba(244, 243, 239, 0.94);
+  --ink: #0c1014;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--foreground-muted);
+  --color-soft: var(--foreground-soft);
+  --color-subtle: var(--foreground-subtle);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --font-sans: var(--font-space-grotesk);
+  --font-display: var(--font-archivo-black);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+html {
+  background: var(--background);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk), sans-serif;
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
