@@ -1,6 +1,6 @@
 "use client";
 
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 import {
   useLayoutEffect,
   useRef,
@@ -8,6 +8,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import PhotoDialog, { type Photo } from "@/components/PhotoDialog";
 import lake from "@/assets/tetons-lake.jpg";
 import meadow from "@/assets/tetons-meadow.jpg";
 import grouse from "@/assets/tetons-grouse.jpg";
@@ -16,10 +17,7 @@ import street from "@/assets/japan-street.jpg";
 import silhouette from "@/assets/japan-silhouette.jpg";
 import styles from "@/styles/Work.module.css";
 
-type Shot = {
-  src: StaticImageData;
-  alt: string;
-};
+type Shot = Photo;
 
 type Location = {
   id: string;
@@ -40,12 +38,12 @@ const locations: Location[] = [
       alt: "Sagebrush meadow in front of a cloud-covered mountain range",
     },
     center: {
-      src: lake,
-      alt: "Still lake between two granite peaks, with forest along the shore",
-    },
-    right: {
       src: grouse,
       alt: "Grouse standing in forest undergrowth",
+    },
+    right: {
+      src: lake,
+      alt: "Still lake between two granite peaks, with forest along the shore",
     },
   },
   {
@@ -67,26 +65,28 @@ const locations: Location[] = [
   },
 ];
 
+function shotsOf(location: Location): Shot[] {
+  return [location.left, location.center, location.right];
+}
+
 function ShotFrame({
   shot,
   className,
   sizes,
+  onOpen,
   children,
 }: {
   shot: Shot;
   className: string;
   sizes: string;
+  onOpen?: () => void;
   children?: ReactNode;
 }) {
-  return (
-    <div
-      className={className}
-      style={
-        {
-          "--shot-ratio": `${shot.src.width} / ${shot.src.height}`,
-        } as CSSProperties
-      }
-    >
+  const style = {
+    "--shot-ratio": `${shot.src.width} / ${shot.src.height}`,
+  } as CSSProperties;
+  const media = (
+    <>
       <Image
         src={shot.src}
         alt={shot.alt}
@@ -95,6 +95,26 @@ function ShotFrame({
         className={styles.image}
       />
       {children}
+    </>
+  );
+
+  if (onOpen) {
+    return (
+      <button
+        type="button"
+        className={className}
+        style={style}
+        aria-label={shot.alt}
+        onClick={onOpen}
+      >
+        {media}
+      </button>
+    );
+  }
+
+  return (
+    <div className={className} style={style}>
+      {media}
     </div>
   );
 }
@@ -102,9 +122,11 @@ function ShotFrame({
 function LocationSlide({
   location,
   clone = false,
+  onOpenShot,
 }: {
   location: Location;
   clone?: boolean;
+  onOpenShot?: (shotIndex: number) => void;
 }) {
   const titleId = clone ? undefined : `${location.id}-title`;
 
@@ -121,18 +143,23 @@ function LocationSlide({
             shot={location.left}
             className={`${styles.frame} ${styles.side} ${styles.left}`}
             sizes="(max-width: 640px) 24vw, 230px"
+            onOpen={onOpenShot ? () => onOpenShot(0) : undefined}
           />
           <ShotFrame
             shot={location.center}
             className={`${styles.frame} ${styles.center}`}
             sizes="(max-width: 640px) 38vw, 360px"
+            onOpen={onOpenShot ? () => onOpenShot(1) : undefined}
           >
-            <p className={styles.year}>{location.year}</p>
+            <p className={styles.year} aria-hidden="true">
+              {location.year}
+            </p>
           </ShotFrame>
           <ShotFrame
             shot={location.right}
             className={`${styles.frame} ${styles.side} ${styles.right}`}
             sizes="(max-width: 640px) 24vw, 230px"
+            onOpen={onOpenShot ? () => onOpenShot(2) : undefined}
           />
         </div>
         <h2 id={titleId} className={styles.title}>
@@ -143,9 +170,36 @@ function LocationSlide({
   );
 }
 
+function locationFromScroll(scrollLeft: number, width: number, looping: boolean) {
+  if (!width) {
+    return 0;
+  }
+
+  const raw = Math.round(scrollLeft / width);
+  const count = locations.length;
+
+  if (!looping) {
+    return Math.min(Math.max(raw, 0), count - 1);
+  }
+
+  if (raw <= 0) {
+    return count - 1;
+  }
+
+  if (raw >= count + 1) {
+    return 0;
+  }
+
+  return raw - 1;
+}
+
 export default function Work() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [loopable, setLoopable] = useState(false);
+  const [active, setActive] = useState(0);
+  const [viewer, setViewer] = useState<{ shots: Shot[]; index: number } | null>(
+    null,
+  );
   const first = locations[0];
   const last = locations[locations.length - 1];
 
@@ -155,7 +209,7 @@ export default function Work() {
 
   useLayoutEffect(() => {
     const el = scrollerRef.current;
-    if (!el || !loopable || locations.length < 2) {
+    if (!el || locations.length < 2) {
       return;
     }
 
@@ -164,11 +218,18 @@ export default function Work() {
       el.scrollLeft = index * slideWidth();
     };
 
-    jumpTo(1);
+    const syncActive = () => {
+      setActive(locationFromScroll(el.scrollLeft, slideWidth(), loopable));
+    };
+
+    if (loopable) {
+      jumpTo(1);
+    }
+    syncActive();
 
     let jumping = false;
     const wrap = () => {
-      if (jumping) {
+      if (!loopable || jumping) {
         return;
       }
 
@@ -184,27 +245,28 @@ export default function Work() {
         jumping = true;
         jumpTo(lastReal);
         jumping = false;
-        return;
-      }
-
-      if (index >= lastReal + 1) {
+      } else if (index >= lastReal + 1) {
         jumping = true;
         jumpTo(1);
         jumping = false;
       }
+
+      syncActive();
     };
 
     const supportsScrollEnd = "onscrollend" in window;
     let scrollTimeout = 0;
     const onScroll = () => {
-      window.clearTimeout(scrollTimeout);
-      scrollTimeout = window.setTimeout(wrap, 80);
+      syncActive();
+      if (!supportsScrollEnd) {
+        window.clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(wrap, 80);
+      }
     };
 
+    el.addEventListener("scroll", onScroll, { passive: true });
     if (supportsScrollEnd) {
       el.addEventListener("scrollend", wrap);
-    } else {
-      el.addEventListener("scroll", onScroll, { passive: true });
     }
 
     const resize = new ResizeObserver(() => {
@@ -214,16 +276,28 @@ export default function Work() {
       }
 
       jumpTo(Math.round(el.scrollLeft / width));
+      syncActive();
     });
     resize.observe(el);
 
     return () => {
       window.clearTimeout(scrollTimeout);
-      el.removeEventListener("scrollend", wrap);
       el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("scrollend", wrap);
       resize.disconnect();
     };
   }, [loopable]);
+
+  const goTo = (locationIndex: number) => {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+
+    const offset = loopable ? 1 : 0;
+    el.scrollLeft = (locationIndex + offset) * el.clientWidth;
+    setActive(locationIndex);
+  };
 
   return (
     <section id="work" className={styles.section}>
@@ -238,12 +312,40 @@ export default function Work() {
           <LocationSlide key={`${last.id}-pre`} location={last} clone />
         ) : null}
         {locations.map((location) => (
-          <LocationSlide key={location.id} location={location} />
+          <LocationSlide
+            key={location.id}
+            location={location}
+            onOpenShot={(shotIndex) =>
+              setViewer({ shots: shotsOf(location), index: shotIndex })
+            }
+          />
         ))}
         {loopable && first ? (
           <LocationSlide key={`${first.id}-post`} location={first} clone />
         ) : null}
       </div>
+      <div className={styles.dots} role="group" aria-label="Select a location">
+        {locations.map((location, index) => (
+          <button
+            key={location.id}
+            type="button"
+            className={styles.dot}
+            aria-label={location.title}
+            aria-current={index === active ? "true" : undefined}
+            onClick={() => goTo(index)}
+          />
+        ))}
+      </div>
+      <PhotoDialog
+        photos={viewer?.shots ?? []}
+        index={viewer?.index ?? null}
+        onClose={() => setViewer(null)}
+        onIndexChange={(shotIndex) =>
+          setViewer((current) =>
+            current ? { ...current, index: shotIndex } : current,
+          )
+        }
+      />
     </section>
   );
 }

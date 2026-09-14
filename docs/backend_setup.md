@@ -1,6 +1,6 @@
 # Backend setup
 
-Photography portfolio CMS for BXTXM: Postgres, admin auth, direct-to-object-storage uploads, albums/tags, and a public Work gallery. Built so a backend resume bullet is defensible in an interview.
+Photography portfolio CMS for BXTXM: Postgres, admin auth, direct-to-object-storage uploads, and Work location sets (title, year, three slotted photos) that render in the existing `#work` template. Built so a backend resume bullet is defensible in an interview.
 
 Recruiters care about data modeling, locking down mutations, storing files correctly, and tradeoffs — not extra frameworks. Microservices, GraphQL, and Kafka are out of scope.
 
@@ -10,12 +10,12 @@ Init commit `dd3c7f7` is a pattern for Prisma, Auth.js, presigned S3, Zod, and `
 
 ## Resume bullets (only after it ships)
 
-- Designed a PostgreSQL schema for photos, albums, and tags (1:N and N:N), with indexes on list queries and explicit `onDelete` (album delete does not wipe photos).
+- Designed a PostgreSQL schema for Work location sets: an album is title + year + exactly three photos (`left` / `center` / `right`), with a unique `(albumId, slot)` constraint and `onDelete: SetNull` so deleting a set does not wipe files.
 - Built admin APIs with Auth.js sessions and bcrypt; every mutation calls `requireAdmin()` in the handler, not only behind `/admin` UI protection.
 - Implemented direct-to-object-storage uploads via short-lived presigned URLs so the Next.js server never proxies image bytes; public URLs are derived from a stored key, not a hardcoded bucket URL.
 - Validated all API input with Zod; paginated the public photo list.
 
-Do not list “used Prisma” with nothing behind it. Do not claim Work or Contact until those sections read from the database.
+Do not list “used Prisma” with nothing behind it. Do not claim Work is CMS-backed until `#work` reads from the database instead of the hardcoded `locations` array.
 
 ---
 
@@ -44,11 +44,31 @@ flowchart LR
 | Model | Rules |
 | --- | --- |
 | `User` | One admin. `passwordHash` (bcrypt), unique email. |
-| `Album` | `title`, unique `slug`, optional `coverPhotoId`. |
-| `Photo` | Unique `storageKey` (object path, not a full URL), `width` / `height`, optional `blurDataUrl` (`@db.Text`), `featured`, optional `albumId` with `onDelete: SetNull`. Indexes on `albumId` and `createdAt`. |
-| `Tag` + `PhotoTag` | Many-to-many. |
+| `Album` | One Work slide. `title` (e.g. `GRAND TETONS`), unique `slug`, `year` (e.g. `2026`), optional `sortOrder`. Not a free-form gallery of N photos. |
+| `Photo` | Unique `storageKey` (object path, not a full URL), `width` / `height`, optional `blurDataUrl` (`@db.Text`), optional `albumId` with `onDelete: SetNull`. For a Work slide, `slot` is `left` \| `center` \| `right`. Unique on `(albumId, slot)` when both are set. Indexes on `albumId` and `createdAt`. |
+| `Tag` + `PhotoTag` | Many-to-many. Optional; not required to render `#work`. |
 
 Public image URL is derived: `` `${CDN_BASE}/${storageKey}` ``.
+
+### Work sets (the public template)
+
+`src/app/Work.tsx` already defines the slide. Admin fills that shape; it does not invent a new layout.
+
+Each album is one location:
+
+- `title` — outline overlay
+- `year` — on the center frame
+- exactly three photos: **left**, **center**, **right**
+
+That matches the existing `Location` type (`title`, `year`, `left`, `center`, `right`). Hover, aspect-ratio, and the horizontal scroller stay in `src/styles/Work.module.css`. Store `width` / `height` on each photo so `--shot-ratio` still works after images move off static imports.
+
+Admin flow:
+
+1. Log in at `/admin/login`.
+2. New set: title, year, three uploads labeled Left / Center / Right, alt text per photo.
+3. Save. `#work` queries Prisma and renders another `LocationSlide`.
+
+Reject saves that are missing a slot, have two photos in the same slot, or omit title/year. Seed Grand Tetons and Japan as the first two albums so the page looks the same after the CMS lands.
 
 ### Target layout
 
@@ -93,7 +113,7 @@ Follow in order.
 
 ### 0. Keep the current site
 
-Do not replace the hero or About. Navbar Work (`#work` in `src/components/Navbar.tsx`) jumps to a new section once photos exist. `src/app/Work.tsx` can be that section component.
+Do not replace the hero, About, Contact, or the Work slide layout. `src/app/Work.tsx` already renders location slides from a hardcoded `locations` array. The CMS replaces that array with Prisma data of the same shape. Navbar Work (`#work` in `src/components/Navbar.tsx`) already jumps there.
 
 ### 1. Dependencies and scripts
 
@@ -183,7 +203,7 @@ Do not add `GET /api/photos` to the matcher. Public reads must stay public; writ
 
 ### 7. Validation and slugs
 
-- `src/lib/validations.ts` — Zod schemas for upload (content type, size), photo create/patch, album create/patch, tag names. Validate at every API boundary.
+- `src/lib/validations.ts` — Zod schemas for upload (content type, size), photo create/patch, album create/patch, tag names. Album create/patch requires `title`, `year`, and exactly three photos with distinct slots (`left`, `center`, `right`). Validate at every API boundary.
 - `src/lib/slug.ts` — URL slugs from titles; unique in the database.
 
 ### 8. Object storage
@@ -202,7 +222,7 @@ Do not add `GET /api/photos` to the matcher. Public reads must stay public; writ
 2. Validate content type and size
 3. Return `{ key, url }`
 
-Browser `PUT`s the file to `url` with the signed `Content-Type`. Then `POST /api/photos` creates the row (title, dimensions, `storageKey`, album, tags). The Next.js server never receives image bytes.
+Browser `PUT`s the file to `url` with the signed `Content-Type`. Then create the album (title, year) and `POST /api/photos` three times with `slot` + `albumId` (or one nested create). The Next.js server never receives image bytes.
 
 ### 10. Resource APIs
 
@@ -221,19 +241,21 @@ Shared reads live in `src/lib/queries.ts` so Server Components and GET handlers 
 
 ### 11. Public Work
 
-- Homepage `#work` section: featured or recent photos from Prisma. Styles in `src/styles/page.module.css` (or a Work CSS module next to `src/app/Work.tsx`).
-- `/albums` and `/albums/[slug]` for the archive.
-- Contact stays a hash until that section exists.
+- Homepage `#work`: query albums that have all three slots, map each to the existing `Location` shape, keep `LocationSlide` and `src/styles/Work.module.css`.
+- Do not swap the three-up cluster for a masonry grid or a generic photo list.
+- Remote `next/image` URLs from `publicUrlForKey`; pass stored width/height for `--shot-ratio`.
+- `/albums` and `/albums/[slug]` are optional archive routes. The homepage scroller is the product.
+- Contact is already on the page; leave it.
 
 ### 12. Admin UI
 
-Functional, not a second design system. Reuse BXTXM type and color tokens.
+Functional, not a second design system. Reuse BXTXM type and color tokens (`docs/design.md`). Quiet tool on the ink background — not a dashboard kit.
 
 - `/admin/login`
-- Dashboard
-- Photo list
-- Multi-file upload: presign → PUT → `POST /api/photos`
-- Album CRUD
+- Dashboard / list of Work sets
+- **New / edit set:** title, year, three file inputs (Left, Center, Right), alt per photo. Presign → PUT → create album + three photos in one save.
+- Reorder sets (`sortOrder`) so the scroller order is explicit
+- Delete set: photos stay (`albumId` set to null) unless you also delete the objects by choice
 
 ### 13. Tests and CI
 
@@ -267,6 +289,7 @@ npm run dev
 ## Done when
 
 - Unauthenticated writes return 401.
-- Authenticated upload: file in the bucket, row in `photos`, image on `#work` or `/albums`.
+- Authenticated save of title + year + three slotted photos: files in the bucket, album row in Postgres, a new slide on `#work` using the existing template.
+- Saving with fewer than three slots, or two photos in the same slot, returns 400.
 - Deleting an album does not delete its photos (`albumId` set to null).
 - `npm run lint`, `typecheck`, `test`, and `build` pass.

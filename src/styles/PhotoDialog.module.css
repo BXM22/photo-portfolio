@@ -1,0 +1,106 @@
+.dialog {
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 4.5rem 1.25rem 1.5rem;
+  border: 0;
+  background: rgba(12, 16, 20, 0.94);
+  color: var(--foreground);
+}
+
+.dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog::backdrop {
+  background: rgba(12, 16, 20, 0.94);
+}
+
+.close,
+.nav {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  transition: opacity 160ms var(--ease-out);
+}
+
+.close {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.prev {
+  left: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.next {
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.close:active,
+.nav:active {
+  opacity: 0.7;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .close:hover,
+  .nav:hover {
+    opacity: 0.75;
+  }
+}
+
+.figure {
+  display: flex;
+  max-width: min(100%, 72rem);
+  max-height: 100%;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  margin: 0;
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  height: calc(100dvh - 7.5rem);
+}
+
+.image {
+  object-fit: contain;
+}
+
+.caption {
+  margin: 0.75rem 0 0;
+  max-width: 40rem;
+  padding-inline: 2.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close,
+  .nav {
+    transition: none;
+  }
+}

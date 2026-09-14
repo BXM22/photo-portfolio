@@ -16,7 +16,7 @@ export default function Contact() {
   return (
     <section id="contact" className={styles.section} aria-labelledby="contact-label">
       <p id="contact-label" className={styles.label}>
-        Contact
+        Instagram
       </p>
       <div className={styles.inner}>
         <div className={styles.stage}>
@@ -28,13 +28,15 @@ export default function Contact() {
                 style={{ "--i": index } as CSSProperties}
               >
                 <div className={styles.sat}>
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    sizes="80px"
-                    className={styles.image}
-                  />
+                  <div className={styles.satFace}>
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="180px"
+                      className={styles.image}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -44,19 +46,17 @@ export default function Contact() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.avatar}
+            aria-hidden="true"
+            tabIndex={-1}
           >
             <Image
               src={avatar}
-              alt="Person walking across a still salt lake, with mountains under a cloudy sky"
+              alt=""
               fill
               sizes="(max-width: 640px) 48vw, 220px"
               placeholder="blur"
               className={styles.avatarImage}
             />
-            <span className={styles.overlay}>
-              View Instagram
-              <span aria-hidden="true">↗</span>
-            </span>
           </a>
         </div>
       </div>

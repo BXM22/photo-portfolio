@@ -1,6 +1,6 @@
 .section {
   box-sizing: border-box;
-  padding: 120px 0 140px;
+  padding: 72px 0 96px;
 }
 
 .label {
@@ -19,14 +19,61 @@
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-behavior: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--foreground-subtle) transparent;
+  scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
 }
 
 .scroller:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: -2px;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  margin-top: 1.25rem;
+  padding-inline: 5vw;
+}
+
+.dot {
+  display: flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dot::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--foreground-subtle);
+  transition: background 160ms var(--ease-out);
+}
+
+.dot[aria-current="true"]::after {
+  background: var(--foreground);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dot:hover::after {
+    background: var(--foreground-muted);
+  }
+
+  .dot[aria-current="true"]:hover::after {
+    background: var(--foreground);
+  }
 }
 
 .slide {
@@ -55,10 +102,17 @@
 
 .frame {
   position: relative;
+  display: block;
   flex-shrink: 0;
   overflow: hidden;
+  padding: 0;
+  border: 0;
   aspect-ratio: 3 / 4;
   background: var(--background);
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: zoom-in;
   transition:
     transform 220ms var(--ease-out),
     opacity 220ms var(--ease-out),
@@ -79,7 +133,7 @@
   width: min(24vw, 230px);
   min-width: 5rem;
   z-index: 1;
-  opacity: 0.45;
+  opacity: 0.82;
 }
 
 .left {
@@ -123,7 +177,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .cluster:hover .side {
-    opacity: 0.88;
+    opacity: 0.92;
   }
 
   .cluster:hover .left {
@@ -164,7 +218,8 @@
 
   .frame,
   .title,
-  .year {
+  .year,
+  .dot::after {
     transition: opacity 200ms var(--ease-out);
   }
 

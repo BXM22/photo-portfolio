@@ -3,7 +3,7 @@ import styles from "@/styles/Navbar.module.css";
 const links = [
   { href: "#about", label: "About" },
   { href: "#work", label: "Work" },
-  { href: "#contact", label: "Contact" },
+  { href: "#contact", label: "Instagram" },
 ] as const;
 
 export default function Navbar() {

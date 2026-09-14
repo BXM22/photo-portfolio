@@ -88,14 +88,16 @@
   font-size: clamp(20px, 2.4vw, 28px);
   line-height: 1.15;
   letter-spacing: 0.01em;
-  color: var(--foreground);
+  color: color-mix(in srgb, var(--foreground) 32%, transparent);
+  -webkit-text-stroke: 1px var(--foreground);
+  text-shadow: 0 1px 14px rgba(12, 16, 20, 0.45);
   text-transform: uppercase;
 }
 
 .heroLead {
   margin: 0;
   max-width: 300px;
-  font-size: 13.5px;
+  font-size: 1rem;
   line-height: 1.6;
   color: var(--foreground-soft);
 }
@@ -162,76 +164,155 @@
 }
 
 .about {
+  --about-paper: #f3efe8;
+  --about-ink: #3a1c1c;
+  --about-muted: #b3aaa3;
+  --about-copy: rgba(58, 28, 28, 0.72);
   box-sizing: border-box;
-  padding: 120px 5vw 140px;
+  padding: 72px 5vw 80px;
+  background: var(--about-paper);
+  color: var(--about-ink);
+}
+
+.about :focus-visible {
+  outline-color: var(--about-ink);
 }
 
 .aboutInner {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4rem;
-  max-width: 1200px;
+  max-width: 1180px;
+  flex-direction: column;
+  gap: 3.5rem;
   margin-inline: auto;
+}
+
+.aboutIntro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem 2.25rem;
+}
+
+.aboutMark {
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-top: 0.35rem;
+  color: var(--about-ink);
+}
+
+.aboutMark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .aboutHeading {
   min-width: 0;
-  flex: 1 1 260px;
-}
-
-.aboutLabel {
-  margin: 0 0 18px;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  color: var(--foreground-subtle);
-  text-transform: uppercase;
 }
 
 .aboutTitle {
   margin: 0;
+  max-width: 18ch;
   font-family: var(--font-archivo-black), sans-serif;
-  font-size: clamp(28px, 4vw, 44px);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  color: var(--foreground);
+  font-size: clamp(2rem, 6.2vw, 4.65rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--about-ink);
 }
 
-.aboutCopy {
-  min-width: 0;
-  max-width: 460px;
-  flex: 1 1 320px;
+.aboutMuted {
+  color: var(--about-muted);
+}
+
+.aboutInline {
+  position: relative;
+  display: inline-block;
+  width: 0.78em;
+  height: 0.78em;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: 0 0.12em -0.08em;
+  vertical-align: -0.06em;
+  background: #1a1210;
+}
+
+.aboutInlineImage {
+  object-fit: cover;
+  object-position: center 32%;
 }
 
 .aboutBody {
-  margin: 0 0 1.5rem;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--foreground-muted);
+  margin: 1.35rem 0 0;
+  max-width: 28rem;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--about-copy);
 }
 
-.instagramLink {
-  display: inline-flex;
-  min-height: 2.75rem;
-  cursor: pointer;
-  align-items: center;
-  gap: 0.5rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 40%, transparent);
-  padding-bottom: 0.25rem;
-  font-size: 0.875rem;
+.aboutFooter {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  align-items: end;
+  gap: 1.5rem 1.75rem;
+}
+
+.aboutLabel {
+  margin: 0;
+  max-width: 6.5rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: var(--foreground);
-  transition:
-    opacity 160ms var(--ease-out),
-    transform 160ms var(--ease-out);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  color: var(--about-ink);
+  text-transform: uppercase;
 }
 
-.instagramLink:active {
-  transform: scale(0.97);
+.aboutShots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .instagramLink:hover {
-    opacity: 0.75;
+.aboutShot {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: 1.15rem;
+  background: #1a1210;
+}
+
+.aboutImage {
+  object-fit: cover;
+}
+
+@media (max-width: 720px) {
+  .about {
+    padding: 56px 5vw 64px;
+  }
+
+  .aboutInner {
+    gap: 2.5rem;
+  }
+
+  .aboutIntro,
+  .aboutFooter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aboutMark {
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-top: 0;
+  }
+
+  .aboutShots {
+    gap: 0.55rem;
+  }
+
+  .aboutShot {
+    border-radius: 0.85rem;
   }
 }

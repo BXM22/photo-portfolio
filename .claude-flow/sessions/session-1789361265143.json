@@ -1,0 +1,14 @@
+{
+  "id": "session-1789361265143",
+  "startedAt": "2026-09-14T04:47:45.143Z",
+  "cwd": "/Users/brennenmeregillano/Desktop/Code/photo-portfolio",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "endedAt": "2026-09-14T04:48:54.498Z",
+  "duration": 69355
+}
