@@ -20,10 +20,11 @@ describe("s3 helpers", () => {
     );
   });
 
-  it("uses a root-relative path when no CDN is set", () => {
-    vi.stubEnv("NEXT_PUBLIC_CDN_URL", "");
+  it("keeps seeded files on this origin even when a CDN is set", () => {
+    vi.stubEnv("NEXT_PUBLIC_CDN_URL", "https://cdn.example.com");
     expect(publicUrlForKey("seed/tetons/lake.jpg")).toBe(
       "/seed/tetons/lake.jpg",
     );
   });
+
 });

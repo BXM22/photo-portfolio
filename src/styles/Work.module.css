@@ -21,6 +21,18 @@
   scroll-behavior: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-x;
+}
+
+.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+.dragging .frame {
+  cursor: grabbing;
 }
 
 .scroller::-webkit-scrollbar {
@@ -113,6 +125,7 @@
   color: inherit;
   text-align: inherit;
   cursor: zoom-in;
+  touch-action: pan-x;
   transition:
     transform 220ms var(--ease-out),
     opacity 220ms var(--ease-out),
@@ -121,6 +134,8 @@
 
 .image {
   object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
 .center {

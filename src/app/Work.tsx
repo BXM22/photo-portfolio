@@ -7,6 +7,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type PointerEvent,
   type ReactNode,
 } from "react";
 import PhotoDialog, { type Photo } from "@/components/PhotoDialog";
@@ -161,14 +162,24 @@ function locationFromScroll(
   return raw - 1;
 }
 
+const DRAG_THRESHOLD = 10;
+
 export default function Work({ locations }: { locations: Location[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    id: number;
+    x: number;
+    scroll: number;
+    moved: boolean;
+  } | null>(null);
+  const skipClickRef = useRef(false);
   const loopable = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
   const [active, setActive] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const [viewer, setViewer] = useState<{ shots: Photo[]; index: number } | null>(
     null,
   );
@@ -274,14 +285,88 @@ export default function Work({ locations }: { locations: Location[] }) {
     setActive(locationIndex);
   };
 
+  const endDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const el = scrollerRef.current;
+    const drag = dragRef.current;
+    if (!el || !drag || drag.id !== event.pointerId) {
+      return;
+    }
+
+    if (drag.moved) {
+      skipClickRef.current = true;
+      const width = el.clientWidth;
+      if (width) {
+        const reduced = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        el.scrollTo({
+          left: Math.round(el.scrollLeft / width) * width,
+          behavior: reduced ? "auto" : "smooth",
+        });
+      }
+    }
+
+    if (el.hasPointerCapture(event.pointerId)) {
+      el.releasePointerCapture(event.pointerId);
+    }
+    dragRef.current = null;
+    setDragging(false);
+  };
+
   return (
     <section id="work" className={styles.section}>
       <p className={styles.label}>Work</p>
       <div
         ref={scrollerRef}
-        className={styles.scroller}
+        className={`${styles.scroller} ${dragging ? styles.dragging : ""}`}
         tabIndex={0}
         aria-label="Locations"
+        onPointerDown={(event) => {
+          if (event.button !== 0) {
+            return;
+          }
+          const el = scrollerRef.current;
+          if (!el) {
+            return;
+          }
+          dragRef.current = {
+            id: event.pointerId,
+            x: event.clientX,
+            scroll: el.scrollLeft,
+            moved: false,
+          };
+        }}
+        onPointerMove={(event) => {
+          const el = scrollerRef.current;
+          const drag = dragRef.current;
+          if (!el || !drag || drag.id !== event.pointerId) {
+            return;
+          }
+          const dx = event.clientX - drag.x;
+          if (!drag.moved) {
+            if (Math.abs(dx) < DRAG_THRESHOLD) {
+              return;
+            }
+            drag.moved = true;
+            try {
+              el.setPointerCapture(event.pointerId);
+            } catch {
+              /* no active pointer */
+            }
+            setDragging(true);
+          }
+          el.scrollLeft = drag.scroll - dx;
+        }}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onClickCapture={(event) => {
+          if (!skipClickRef.current) {
+            return;
+          }
+          skipClickRef.current = false;
+          event.preventDefault();
+          event.stopPropagation();
+        }}
       >
         {loopable && last ? (
           <LocationSlide key={`${last.id}-pre`} location={last} clone />

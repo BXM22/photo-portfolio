@@ -27,6 +27,8 @@
 # local agent telemetry and design references
 .claude-flow/
 inspo/
+AGENTS.md
+CLAUDE.md
 
 # debug
 npm-debug.log*

@@ -10,7 +10,7 @@ Built as a one-page site in **Next.js 16**, **React 19**, and **TypeScript**, wi
 
 BXTXM is a personal photography site: full-viewport hero, About, a horizontal Work scroller of location sets, and an Instagram orbit. The photograph leads; type and chrome stay quiet.
 
-Work slides (title, year, left / center / right) come from PostgreSQL. Hero, About, and Instagram stay static. Editing Work sets happens at `/admin` — see the local `ADMIN.md` file for that flow (gitignored; copy from this README’s CMS section if you do not have one).
+Work slides (title, year, left / center / right) come from PostgreSQL. Hero, About, and Instagram stay static. Editing Work sets happens at `/admin` — see the local `ADMIN.md` file for that flow (gitignored; copy from this README’s CMS section if you do not have one). Hosting and later upgrades: [nextsteps.md](nextsteps.md).
 
 ## Prerequisites
 
@@ -19,6 +19,22 @@ Work slides (title, year, left / center / right) come from PostgreSQL. Hero, Abo
 - An S3-compatible bucket only if you want to **upload new photos** (AWS S3, Cloudflare R2, or MinIO). Seeded Grand Tetons and Japan images live under `public/seed/` and work without a bucket.
 
 ## Full local setup
+
+```bash
+npm run setup
+npm run dev
+```
+
+That installs packages, creates `.env` if needed, fills `AUTH_SECRET` and local admin defaults when those fields are empty, starts Postgres, then generates / migrates / seeds the database.
+
+Flags:
+
+```bash
+bash scripts/setup.sh --dev       # setup, then start the Next.js server
+bash scripts/setup.sh --verify    # also run lint, typecheck, and tests
+```
+
+Or step through it by hand:
 
 ### 1. Install
 
@@ -97,6 +113,7 @@ npm run build
 | `npm run lint` / `lint:fix` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest |
+| `npm run setup` | Full local setup (deps, `.env`, Docker Postgres, migrate, seed) |
 | `npm run db:generate` | Generate Prisma Client |
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:migrate:deploy` | `prisma migrate deploy` |
