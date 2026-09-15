@@ -1,0 +1,180 @@
+.shell {
+  min-height: 100dvh;
+  padding: 1.5rem 5vw 4rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.brand {
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.link,
+.button,
+.submit,
+.ghost {
+  display: inline-flex;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--foreground);
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+}
+
+.button,
+.submit {
+  padding: 0 1rem;
+  border: 1px solid rgba(244, 243, 239, 0.35);
+}
+
+.ghost {
+  padding: 0;
+  opacity: 0.75;
+}
+
+.label {
+  margin: 0 0 0.75rem;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+
+.title {
+  margin: 0 0 1.75rem;
+  font-family: var(--font-archivo-black), sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.list {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 720px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(244, 243, 239, 0.12);
+}
+
+.rowTitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.rowMeta {
+  margin: 0.25rem 0 0;
+  font-size: 13px;
+  color: var(--foreground-subtle);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 720px;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field span {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(244, 243, 239, 0.35);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+}
+
+.slots {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 800px) {
+  .slots {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.slot {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.preview {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: rgba(244, 243, 239, 0.06);
+}
+
+.preview img {
+  object-fit: cover;
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--foreground-muted);
+}
+
+.login {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 5vw;
+}
+
+.loginForm {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 360px);
+}

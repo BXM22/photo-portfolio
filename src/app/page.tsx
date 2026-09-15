@@ -5,6 +5,7 @@ import lake from "@/assets/tetons-lake.jpg";
 import street from "@/assets/japan-street.jpg";
 import sunset from "@/assets/contact-orbit-2.jpg";
 import Navbar from "@/components/Navbar";
+import { getWorkLocations } from "@/lib/queries";
 import Work from "./Work";
 import Contact from "./Contact";
 import styles from "@/styles/page.module.css";
@@ -25,7 +26,11 @@ const aboutShots: { src: StaticImageData; alt: string; position?: string }[] = [
   },
 ];
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const locations = await getWorkLocations();
+
   return (
     <main>
       <a className={styles.skipLink} href="#work">
@@ -149,7 +154,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <Work />
+      <Work locations={locations} />
       <Contact />
     </main>
   );

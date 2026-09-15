@@ -38,6 +38,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local admin operator notes
+ADMIN.md
+
 # vercel
 .vercel
 

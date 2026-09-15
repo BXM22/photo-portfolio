@@ -1,72 +1,36 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
 } from "react";
 import PhotoDialog, { type Photo } from "@/components/PhotoDialog";
-import lake from "@/assets/tetons-lake.jpg";
-import meadow from "@/assets/tetons-meadow.jpg";
-import grouse from "@/assets/tetons-grouse.jpg";
-import umeda from "@/assets/japan-umeda.jpg";
-import street from "@/assets/japan-street.jpg";
-import silhouette from "@/assets/japan-silhouette.jpg";
 import styles from "@/styles/Work.module.css";
 
-type Shot = Photo;
-
-type Location = {
+export type Location = {
   id: string;
   title: string;
   year: string;
-  left: Shot;
-  center: Shot;
-  right: Shot;
+  left: Photo;
+  center: Photo;
+  right: Photo;
 };
 
-const locations: Location[] = [
-  {
-    id: "tetons",
-    title: "GRAND TETONS",
-    year: "2026",
-    left: {
-      src: meadow,
-      alt: "Sagebrush meadow in front of a cloud-covered mountain range",
-    },
-    center: {
-      src: grouse,
-      alt: "Grouse standing in forest undergrowth",
-    },
-    right: {
-      src: lake,
-      alt: "Still lake between two granite peaks, with forest along the shore",
-    },
-  },
-  {
-    id: "japan",
-    title: "JAPAN",
-    year: "2026",
-    left: {
-      src: street,
-      alt: "Crowded night street in Japan, photographed in black and white",
-    },
-    center: {
-      src: umeda,
-      alt: "Looking up at the Umeda Sky Building circular aperture against the sky",
-    },
-    right: {
-      src: silhouette,
-      alt: "Silhouette of a person against a night city skyline",
-    },
-  },
-];
-
-function shotsOf(location: Location): Shot[] {
+function shotsOf(location: Location): Photo[] {
   return [location.left, location.center, location.right];
+}
+
+function shotRatio(shot: Photo): string {
+  if (typeof shot.src !== "string") {
+    const image = shot.src as StaticImageData;
+    return `${image.width} / ${image.height}`;
+  }
+  return `${shot.width ?? 1} / ${shot.height ?? 1}`;
 }
 
 function ShotFrame({
@@ -76,14 +40,14 @@ function ShotFrame({
   onOpen,
   children,
 }: {
-  shot: Shot;
+  shot: Photo;
   className: string;
   sizes: string;
   onOpen?: () => void;
   children?: ReactNode;
 }) {
   const style = {
-    "--shot-ratio": `${shot.src.width} / ${shot.src.height}`,
+    "--shot-ratio": shotRatio(shot),
   } as CSSProperties;
   const media = (
     <>
@@ -170,13 +134,17 @@ function LocationSlide({
   );
 }
 
-function locationFromScroll(scrollLeft: number, width: number, looping: boolean) {
-  if (!width) {
+function locationFromScroll(
+  scrollLeft: number,
+  width: number,
+  looping: boolean,
+  count: number,
+) {
+  if (!width || count === 0) {
     return 0;
   }
 
   const raw = Math.round(scrollLeft / width);
-  const count = locations.length;
 
   if (!looping) {
     return Math.min(Math.max(raw, 0), count - 1);
@@ -193,19 +161,19 @@ function locationFromScroll(scrollLeft: number, width: number, looping: boolean)
   return raw - 1;
 }
 
-export default function Work() {
+export default function Work({ locations }: { locations: Location[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [loopable, setLoopable] = useState(false);
+  const loopable = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [active, setActive] = useState(0);
-  const [viewer, setViewer] = useState<{ shots: Shot[]; index: number } | null>(
+  const [viewer, setViewer] = useState<{ shots: Photo[]; index: number } | null>(
     null,
   );
   const first = locations[0];
   const last = locations[locations.length - 1];
-
-  useLayoutEffect(() => {
-    setLoopable(true);
-  }, []);
 
   useLayoutEffect(() => {
     const el = scrollerRef.current;
@@ -219,7 +187,14 @@ export default function Work() {
     };
 
     const syncActive = () => {
-      setActive(locationFromScroll(el.scrollLeft, slideWidth(), loopable));
+      setActive(
+        locationFromScroll(
+          el.scrollLeft,
+          slideWidth(),
+          loopable,
+          locations.length,
+        ),
+      );
     };
 
     if (loopable) {
@@ -286,7 +261,7 @@ export default function Work() {
       el.removeEventListener("scrollend", wrap);
       resize.disconnect();
     };
-  }, [loopable]);
+  }, [loopable, locations]);
 
   const goTo = (locationIndex: number) => {
     const el = scrollerRef.current;

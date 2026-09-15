@@ -5,8 +5,10 @@ import { useEffect, useRef } from "react";
 import styles from "@/styles/PhotoDialog.module.css";
 
 export type Photo = {
-  src: StaticImageData;
+  src: string | StaticImageData;
   alt: string;
+  width?: number;
+  height?: number;
 };
 
 export default function PhotoDialog({
