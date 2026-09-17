@@ -4,7 +4,13 @@ A photography portfolio for landscape and travel work — long horizons, low lig
 
 Built as a one-page site in **Next.js 16**, **React 19**, and **TypeScript**, with a Postgres-backed Work CMS.
 
-<img src="src/assets/hero.jpg" alt="People standing on a still salt lake, with mountains reflected in the water" width="960">
+<img src="docs/screenshots/hero.jpg" alt="Hero: still salt lake, Still water / Still light, BXTXM wordmark" width="960">
+
+<img src="docs/screenshots/about.png" alt="About: I take a lot of photos that catch the candid world, three stills" width="960">
+
+<img src="docs/screenshots/work.png" alt="Work: Grand Tetons location set, three-up scroller" width="960">
+
+<img src="docs/screenshots/instagram.png" alt="Instagram: circular orbit of stills around a center portrait" width="960">
 
 ## Overview
 
